@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: backup-shared
+metadata:
+  annotations:
+    description: backup PVCs of the same project (File storage)
+    openshift.io/provider-display-name: Red Hat, Inc.
+    tags: backup
+  creationTimestamp: null
+  name: backup-shared
+objects:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    generateName: pvc-backup-shared-
+    labels:
+      app: backup-shared
+      template: backup-shared
+  spec:
+    containers:
+    - env:
+      - name: PVC_FOLDER
+        value: ${PVC_NAME}
+      - name: BCK_FOLDER
+        value: ${BCK_FOLDER}        
+      image: dev/backup:latest
+      imagePullPolicy: IfNotPresent
+      name: backup-shared
+      resources: {}
+      securityContext:
+        capabilities: {}
+        privileged: false
+      terminationMessagePath: /dev/termination-log
+      volumeMounts:
+      - mountPath: /source
+        name: ${PVC_NAME}-data
+      - mountPath: /backup
+        name: pvc-backup-data
+    dnsPolicy: ClusterFirst
+    restartPolicy: Never
+    securityContext:
+      supplementalGroups:
+      - 65534
+    serviceAccountName: pvc-backup-deployer
+    volumes:
+    - name: ${PVC_NAME}-data
+      persistentVolumeClaim:
+        claimName: ${PVC_NAME}
+    - name: pvc-backup-data
+      persistentVolumeClaim:
+        claimName: backup
+  status: {}
+parameters:
+- description: PVC you want to back up.
+  displayName: PVC Name
+  name: PVC_NAME
+  required: true
+- description: relative path of the folder you want to make a backup. Example 
+    your volume mount point - /data
+    folder you want to backup - /data/private/bck
+    BCK_FOLDER value - private/bck
+    Setting this value will avoid the backup of the entire PVC/mount point. If 
+    the folder does not exists a full backup of the entire PVC will be performed.
+  displayName: Backup Folder
+  name: BCK_FOLDER
