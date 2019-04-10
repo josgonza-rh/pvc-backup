@@ -50,12 +50,17 @@ objects:
         claimName: ${PVC_NAME}
     - name: pvc-backup-data
       persistentVolumeClaim:
-        claimName: backup
+        claimName: ${PVC_BCK}
   status: {}
 parameters:
 - description: PVC you want to back up.
   name: PVC_NAME
   required: true
+- description: PVC for this BackupEr pod.
+  displayName: PVC Backup
+  name: PVC_BCK
+  required: true
+  value: backup 
 - description: The node you want to schedule the pod (FQDN)
   name: NODE
   required: true
