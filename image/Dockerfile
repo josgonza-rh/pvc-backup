@@ -14,7 +14,7 @@ RUN \
   echo "${USER_PASS}" | passwd rsyncuser --stdin
 
 RUN \
-  yum rsync -y install \
+  yum install rsync -y && \
   yum clean all
 
 COPY backup.sh $IMAGE_SCRIPTS_HOME/
