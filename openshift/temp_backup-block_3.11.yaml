@@ -11,6 +11,25 @@ metadata:
   name: backup-block
 objects:
 - apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    labels:
+      template: backup-block
+    name: pvc-backup-deployer
+- apiVersion: v1
+  groupNames: []
+  kind: RoleBinding
+  metadata:
+    labels:
+      template: backup-block  
+    name: backupers
+  roleRef:
+    kind: ClusterRole
+    name: backuper
+  subjects:
+  - kind: ServiceAccount
+    name: pvc-backup-deployer    
+- apiVersion: v1
   kind: Pod
   metadata:
     generateName: pvc-backup-block-

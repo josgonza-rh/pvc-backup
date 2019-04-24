@@ -1,32 +1,53 @@
 apiVersion: v1
 kind: Template
 labels:
-  template: backup-block
+  template: backup-shared
 metadata:
   annotations:
-    description: backup PVCs of the same project (Block storage)
+    description: backup PVCs of the same project (File storage)
     openshift.io/provider-display-name: Red Hat, Inc.
     tags: backup
   creationTimestamp: null
-  name: backup-block
+  name: backup-shared
 objects:
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    labels:
+      template: backup-shared    
+    name: pvc-backup-deployer
+- apiVersion: v1
+  kind: RoleBinding
+  metadata:
+    labels:
+      template: backup-shared  
+    name: backupers
+  roleRef:
+    apiGroup: v1
+    kind: Role
+    name: backuper
+  subjects:
+  - apiVersion: v1
+    fieldPath: metadata.namespace
+    kind: ServiceAccount
+    name: pvc-backup-deployer   
 - apiVersion: v1
   kind: Pod
   metadata:
-    generateName: pvc-backup-block-
+    generateName: pvc-backup-shared-
     labels:
-      app: backup-block
-      template: backup-block
+      app: backup-shared
+      template: backup-shared
   spec:
     containers:
     - env:
       - name: PVC_FOLDER
         value: ${PVC_NAME}
       - name: BCK_FOLDER
-        value: ${BCK_FOLDER}             
+        value: ${BCK_FOLDER}        
       image: quay.io/josgonza/pvc-backup:latest
       imagePullPolicy: IfNotPresent
-      name: backup-block
+      name: backup-shared
       resources: {}
       securityContext:
         capabilities: {}
@@ -38,21 +59,21 @@ objects:
       - mountPath: /backup
         name: pvc-backup-data
     dnsPolicy: ClusterFirst
-    nodeName: ${NODE}
     restartPolicy: Never
     securityContext:
       supplementalGroups:
       - 65534
-    serviceAccountName: pvc-backup-deployer      
+    serviceAccountName: pvc-backup-deployer
     volumes:
     - name: ${PVC_NAME}-data
       persistentVolumeClaim:
         claimName: ${PVC_NAME}
     - name: pvc-backup-data
       persistentVolumeClaim:
-        claimName: ${PVC_BCK}
+        claimName: ${PVC_BCK} 
 parameters:
 - description: PVC you want to back up.
+  displayName: PVC Name
   name: PVC_NAME
   required: true
 - description: PVC for this BackupEr pod.
@@ -60,9 +81,6 @@ parameters:
   name: PVC_BCK
   required: true
   value: backup 
-- description: The node you want to schedule the pod (FQDN)
-  name: NODE
-  required: true
 - description: relative path of the folder you want to make a backup. Example 
     your volume mount point - /data
     folder you want to backup - /data/private/bck

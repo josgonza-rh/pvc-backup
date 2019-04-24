@@ -11,6 +11,12 @@ metadata:
   name: backup-block
 objects:
 - apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    labels:
+      template: backup-block    
+    name: pvc-backup-deployer
+- apiVersion: v1
   kind: Pod
   metadata:
     generateName: pvc-backup-block-

@@ -50,10 +50,6 @@ objects:
     - name: pvc-backup-data
       persistentVolumeClaim:
         claimName: ${PVC_BCK}
-- apiVersion: v1
-  kind: ServiceAccount
-  metadata:
-    name: pvc-backup-deployer
 parameters:
 - description: PVC you want to back up.
   displayName: PVC Name
