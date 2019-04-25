@@ -13,6 +13,11 @@ RUN \
   useradd -r -u 10002 -g rsyncuser -G nfsnobody --home-dir $IMAGE_SCRIPTS_HOME rsyncuser && \
   echo "${USER_PASS}" | passwd rsyncuser --stdin
 
+# Update the image with the latest packages (recommended)
+RUN yum update -y && \
+  yum clean all
+
+# Install rsync tool
 RUN \
   yum install rsync -y && \
   yum clean all
